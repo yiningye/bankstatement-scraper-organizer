@@ -51,7 +51,7 @@ def categorize(category):
 def save_results():
     if not transactions or not categorized:
         return
-    path = filedialog.asksaveasfilename(defaultextension=".csv")
+    path = "statementscategorized.csv"
     if not path:
         return
     with open(path, "w", newline="") as f:

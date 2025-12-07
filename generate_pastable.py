@@ -1,4 +1,4 @@
-
+import os
 import csv
 from collections import defaultdict
 
@@ -14,7 +14,9 @@ with open(input_file, newline="", encoding="utf-8") as f:
         groups[cat].append(row)
 
 for cat, rows in groups.items():
-    output_file = f"{cat}.tsv"  # tab-separated
+    OUTPUT_DIR = "category_tsvs"
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    output_file = f"category_tsvs/{cat}.tsv"  # tab-separated
     with open(output_file, "w", newline="", encoding="utf-8") as out:
         # write the same headers
         out.write("transaction_date\tmerchant\tamount\tCategory\n")
