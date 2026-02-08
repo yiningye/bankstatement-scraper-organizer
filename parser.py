@@ -4,8 +4,9 @@ from datetime import datetime
 
 date_pattern = re.compile(r"\b\d{2}/\d{2}/\d{4}\b")
 amount_pattern = re.compile(r"-?\$\d+\.\d{2}")
+TRANSACTION_TYPES = ("Deposit", "Other Payment", "Transfer", "Virtual Card", "Debit Card")
 
-def parse_blocks(lines):
+def parse_creditcard_blocks(lines):
     records = []
     buffer = []
 
@@ -27,7 +28,7 @@ def parse_blocks(lines):
         amt_match = amount_pattern.search(text)
         if not amt_match:
             return None
-        amount = amt_match.group().replace("$", "")
+        amount = float(amt_match.group().replace("$", ""))*-1
 
         return [txn_date, merchant, amount]
 
@@ -41,17 +42,40 @@ def parse_blocks(lines):
                 
         buffer.append(line)
     
-    
-
     # last block
     if buffer:
         rec = process_block(buffer)
         if rec:
             records.append(rec)
-    records.sort(key=lambda x: x[0])
 
     return records
+# -------------------
+# Debit card parser
+# -------------------
+def parse_debitcard_blocks(transactions):
+    # Each transaction uses 5 elements: date, merchant, view/edit, transaction line, blank
+    parsed = []
+    for i in range(0, len(transactions), 5):
+        date = transactions[i].strip()                  # remove extra spaces/tabs
+        merchant = transactions[i+1].strip()           # merchant/description
+        transaction_line = transactions[i+3].strip()  # contains type and amount
+        amount = float(transaction_line.split('\t')[1].replace('$', '').replace(',', ''))       # split by tab and take amount
+        parsed.append((date, merchant, amount))
+    print(parsed)
+    return parsed
 
+def split_expenses_and_income(records):
+    expenses = []
+    payments = []
+
+    for date, merchant, amount in records:
+        if amount < 0:
+            expenses.append([date, merchant, amount])
+        elif amount > 0:
+            payments.append([date, merchant, amount])
+            print(merchant, amount,"payments")
+
+    return expenses, payments
 
 def write_csv(records, out_path):
     with open(out_path, "w", newline="") as f:
@@ -61,10 +85,22 @@ def write_csv(records, out_path):
 
 
 if __name__ == "__main__":
-    with open("transactions.txt") as f:
-        lines = [l.strip() for l in f if l.strip()]
+    with open("1.paste/creditcard_transactions.txt") as f:
+        creditcard_lines = [l.strip() for l in f if l.strip()]
     
-    records = parse_blocks(lines)
-    print(records)
-
-    write_csv(records, "transactions.csv")
+    with open("1.paste/debitcard_transactions.txt") as f:
+        debitcard_lines = [l.rstrip("\n") for l in f]
+    print(debitcard_lines,"debitcard lines")
+    creditcard_records = parse_creditcard_blocks(creditcard_lines)
+    debitcard_records = parse_debitcard_blocks(debitcard_lines)
+    # print("debitcard_records:", debitcard_records)
+    
+    records = creditcard_records + debitcard_records
+    
+    records.sort(key=lambda x: x[0])
+    
+    expenses, income = split_expenses_and_income(records)
+    
+    write_csv(expenses, "expenses.csv")
+    write_csv(income, "income.csv")
+    print(debitcard_records)
