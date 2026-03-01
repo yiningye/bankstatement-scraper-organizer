@@ -4,7 +4,7 @@ from datetime import datetime
 
 date_pattern = re.compile(r"\b\d{2}/\d{2}/\d{4}\b")
 amount_pattern = re.compile(r"-?\$\d+\.\d{2}")
-TRANSACTION_TYPES = ("Deposit", "Other Payment", "Transfer", "Virtual Card", "Debit Card")
+TRANSACTION_TYPES = ("Deposit", "Other Payment", "Virtual Card", "Debit Card")
 
 def parse_creditcard_blocks(lines):
     records = []
@@ -57,9 +57,12 @@ def parse_debitcard_blocks(transactions):
     parsed = []
     for i in range(0, len(transactions), 5):
         date = transactions[i].strip()                  # remove extra spaces/tabs
-        merchant = transactions[i+1].strip()           # merchant/description
+        merchant = transactions[i+1].strip().replace(',', '')           # merchant/description
         transaction_line = transactions[i+3].strip()  # contains type and amount
-        amount = float(transaction_line.split('\t')[1].replace('$', '').replace(',', ''))       # split by tab and take amount
+        type_amt_arr = transaction_line.split('\t')
+        if type_amt_arr[0] not in TRANSACTION_TYPES:
+            continue
+        amount = float(type_amt_arr[1].replace('$', '').replace(',', ''))       # split by tab and take amount
         parsed.append((date, merchant, amount))
     print(parsed)
     return parsed
