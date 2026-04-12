@@ -1,0 +1,4 @@
+Expand transaction for Transaction date: 03/23/2026 ORCA 888-988-6722 WA 03/23/2026	Expand transaction for Transaction date: 03/23/2026ORCA 888-988-6722 WA	Type Purchases
+$25.00	
+Expand transaction for Transaction date: 03/24/2026 TST* MR. WEST - UNIVERSITSEATTLE WA 03/24/2026	Expand transaction for Transaction date: 03/24/2026TST* MR. WEST - UNIVERSITSEATTLE WA	Type Purchases
+$27.64	
