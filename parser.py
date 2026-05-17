@@ -3,7 +3,7 @@ import csv
 from datetime import datetime
 
 date_pattern = re.compile(r"\b\d{2}/\d{2}/\d{4}\b")
-amount_pattern = re.compile(r"-?\$\d+\.\d{2}")
+amount_pattern = re.compile(r"-?\$[\d,]+\.\d{2}")
 TRANSACTION_TYPES = ("Deposit", "Other Payment", "Virtual Card", "Debit Card")
 
 def parse_creditcard_blocks(lines):
@@ -28,7 +28,9 @@ def parse_creditcard_blocks(lines):
         amt_match = amount_pattern.search(text)
         if not amt_match:
             return None
-        amount = float(amt_match.group().replace("$", ""))*-1
+        amount = float(
+            amt_match.group().replace("$", "").replace(",", "")
+        ) * -1
 
         return [txn_date, merchant, amount]
 
